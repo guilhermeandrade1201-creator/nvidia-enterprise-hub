@@ -4,85 +4,364 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0e14">
-  <meta name="description" content="Demonstração comunitária e independente de um dashboard para workloads de IA.">
-  <title>AI Infrastructure Hub — Community Demo</title>
+  <meta name="description" content="Dashboard independente de demonstração para infraestruturas de IA.">
+  <title>NVIDIA Community AI Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <script>
-    tailwind.config={darkMode:'class',theme:{extend:{colors:{accent:'#76b900',base:'#0b0e14',panel:'#121721'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']}}}};
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: '#76B900',
+            accent2: '#8edd00',
+            panel: '#121721',
+            bg: '#0b0e14',
+            line: '#1e293b'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
   </script>
   <style>
-    body{background:#0b0e14;color:#e2e8f0;font-family:Inter,system-ui,sans-serif;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:40px 40px}
-    .panel{background:rgba(18,23,33,.92);border:1px solid rgba(148,163,184,.16);box-shadow:0 12px 32px #0004}
-    button:focus-visible,input:focus-visible{outline:2px solid #76b900;outline-offset:3px}
-    .tab[aria-selected="true"]{background:#76b900;color:#071000}
+    html { scroll-behavior: smooth; }
+    body {
+      background: #0b0e14;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .panel {
+      background: rgba(18, 23, 33, 0.82);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.30);
+      backdrop-filter: blur(12px);
+    }
+    .glow {
+      box-shadow: 0 0 0 1px rgba(118,185,0,0.25), 0 0 18px rgba(118,185,0,0.22);
+    }
+    .tab-selected {
+      background: linear-gradient(135deg, #76B900 0%, #8edd00 100%);
+      color: #03130a;
+      box-shadow: 0 8px 22px rgba(118,185,0,0.30);
+    }
+    .metric-box {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+    .node {
+      background: linear-gradient(180deg, rgba(15,23,42,0.8), rgba(2,6,23,0.9));
+      border: 1px solid rgba(118,185,0,0.28);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0b0e14; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #76B900; }
   </style>
 </head>
-<body class="min-h-screen">
-  <header class="sticky top-0 z-10 border-b border-slate-800 bg-[#0b0e14]/95 backdrop-blur px-4 py-4 md:px-8">
-    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
-      <div><p class="font-mono text-xs font-semibold tracking-[.2em] text-accent">COMMUNITY PROJECT · INDEPENDENT DEMO</p><h1 class="mt-1 text-xl font-extrabold text-white md:text-2xl">AI Infrastructure Hub</h1></div>
-      <button id="export" class="rounded-lg border border-accent/50 bg-accent/10 px-4 py-2 font-mono text-xs font-bold text-accent hover:bg-accent hover:text-black">Exportar relatório JSON</button>
+<body class="min-h-screen antialiased selection:bg-accent selection:text-black">
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-[#0b0e14]/90 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-8">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 text-sm font-bold text-accent">AI</div>
+        <div>
+          <div class="font-mono text-[10px] tracking-[0.24em] text-accent">COMMUNITY DEMO</div>
+          <h1 class="text-lg font-extrabold text-white md:text-xl">NVIDIA Community AI Hub</h1>
+        </div>
+      </div>
+      <button id="export-report" class="rounded-lg border border-accent/50 bg-accent/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-accent transition hover:bg-accent hover:text-black">Export JSON</button>
     </div>
   </header>
-  <main class="mx-auto max-w-7xl space-y-5 p-4 md:p-8">
-    <aside class="rounded-xl border border-amber-500/40 bg-amber-950/30 p-4 text-sm leading-relaxed text-amber-100" role="note">
-      <strong>Projeto de fã, independente e não oficial.</strong> Não é afiliado, patrocinado nem endossado pela NVIDIA. Interface, métricas e diagramas são demonstrações ilustrativas — não representam benchmarks, especificações, políticas ou topologias reais de produtos.
+
+  <main class="mx-auto max-w-7xl space-y-6 px-4 py-6 md:px-8 md:py-8">
+    <aside class="panel glow rounded-2xl p-4 text-sm leading-relaxed text-amber-100">
+      <span class="font-bold text-amber-200">Projeto independente de fã.</span> Não é afiliado, patrocinado, aprovado ou endossado pela NVIDIA. Todas as métricas e diagramas são ilustrativas, para fins educacionais e de demonstração comunitária.
     </aside>
-    <nav class="panel flex flex-wrap gap-2 rounded-xl p-2" role="tablist" aria-label="Seções do dashboard">
-      <button class="tab flex-1 rounded-lg px-4 py-3 text-sm font-bold" role="tab" aria-selected="true" aria-controls="sim" id="tab-sim" data-tab="sim">Simulador de workload</button>
-      <button class="tab flex-1 rounded-lg px-4 py-3 text-sm font-bold text-slate-300" role="tab" aria-selected="false" aria-controls="security" id="tab-security" data-tab="security">Sandbox demonstrativo</button>
-      <button class="tab flex-1 rounded-lg px-4 py-3 text-sm font-bold text-slate-300" role="tab" aria-selected="false" aria-controls="infra" id="tab-infra" data-tab="infra">Estimativa de infraestrutura</button>
+
+    <nav class="panel flex flex-wrap gap-2 rounded-2xl p-2" aria-label="Tabs do dashboard">
+      <button class="tab tab-selected flex-1 rounded-xl px-4 py-3 text-sm font-bold transition" data-target="panel-workload" aria-selected="true">1. Simulador de workload</button>
+      <button class="tab flex-1 rounded-xl px-4 py-3 text-sm font-bold text-slate-300 transition" data-target="panel-security" aria-selected="false">2. Sandbox</button>
+      <button class="tab flex-1 rounded-xl px-4 py-3 text-sm font-bold text-slate-300 transition" data-target="panel-infra" aria-selected="false">3. Infraestrutura</button>
     </nav>
-    <section id="sim" class="tab-panel grid gap-5 lg:grid-cols-3" role="tabpanel" aria-labelledby="tab-sim">
-      <div class="panel space-y-6 rounded-2xl p-6">
-        <div><h2 class="text-lg font-bold text-white">Parâmetros ilustrativos</h2><p class="mt-1 text-xs text-slate-400">Controles abaixo alimentam apenas um modelo fictício executado no navegador.</p></div>
-        <label class="block text-sm">Tamanho do modelo <span id="model-val" class="float-right font-mono text-accent">70B</span><input id="model" type="range" min="7" max="120" value="70" class="mt-3 w-full accent-accent"></label>
-        <label class="block text-sm">Agentes paralelos <span id="agents-val" class="float-right font-mono text-accent">12</span><input id="agents" type="range" min="1" max="32" value="12" class="mt-3 w-full accent-accent"></label>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="rounded-xl border border-slate-800 bg-black/20 p-4"><p class="font-mono text-[10px] text-slate-400">TOKENS/S · SIMULADO</p><p id="tokens" class="mt-1 text-2xl font-bold text-accent">121.0</p></div>
-          <div class="rounded-xl border border-slate-800 bg-black/20 p-4"><p class="font-mono text-[10px] text-slate-400">CARGA · SIMULADA</p><p id="load" class="mt-1 text-2xl font-bold text-cyan-300">42%</p></div>
+
+    <section id="panel-workload" class="tab-panel grid gap-5 lg:grid-cols-3">
+      <div class="panel rounded-2xl p-6">
+        <div class="mb-6 flex items-center justify-between gap-3">
+          <h2 class="text-lg font-bold text-white">Parâmetros</h2>
+          <span class="rounded-full border border-accent/30 bg-accent/10 px-2 py-1 font-mono text-[10px] text-accent">SIMULADO</span>
         </div>
-        <p class="rounded-lg bg-slate-900 p-3 text-xs text-slate-400">Os números são gerados por fórmula de demonstração e não devem ser usados para dimensionamento ou comparação de hardware.</p>
+
+        <div class="space-y-5">
+          <div>
+            <div class="mb-2 flex items-center justify-between text-sm">
+              <span class="text-slate-300">Tamanho do modelo</span>
+              <span id="model-label" class="font-mono font-bold text-accent">70B</span>
+            </div>
+            <input id="model" type="range" min="7" max="120" value="70" class="w-full accent-accent">
+          </div>
+
+          <div>
+            <div class="mb-2 flex items-center justify-between text-sm">
+              <span class="text-slate-300">Agentes paralelos</span>
+              <span id="agents-label" class="font-mono font-bold text-accent">12</span>
+            </div>
+            <input id="agents" type="range" min="1" max="32" value="12" class="w-full accent-accent">
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-3">
+          <div class="metric-box rounded-xl p-4">
+            <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">Tokens/s</div>
+            <div id="tokens" class="mt-2 text-3xl font-bold text-accent">121.0</div>
+          </div>
+          <div class="metric-box rounded-xl p-4">
+            <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">Carga</div>
+            <div id="load" class="mt-2 text-3xl font-bold text-cyan-300">42%</div>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-xs text-slate-400">
+          Fórmulas locais e ilustrativas. Não substituem benchmarks reais ou validações técnicas oficiais.
+        </div>
       </div>
-      <div class="panel rounded-2xl p-6 lg:col-span-2"><h2 class="mb-4 text-lg font-bold text-white">Tendência de carga simulada</h2><div class="h-72"><canvas id="workload-chart" aria-label="Gráfico demonstrativo de carga" role="img"></canvas></div></div>
-    </section>
-    <section id="security" class="tab-panel hidden grid gap-5 lg:grid-cols-3" role="tabpanel" aria-labelledby="tab-security" hidden>
-      <div class="panel space-y-5 rounded-2xl p-6"><div><h2 class="text-lg font-bold text-white">Controles de demonstração</h2><p class="mt-1 text-xs text-slate-400">Alternâncias locais; não aplicam políticas de segurança reais.</p></div>
-        <label class="flex items-center justify-between gap-4 rounded-lg bg-slate-900 p-3 text-sm">Simular bloqueio de execução<input id="exec-rule" type="checkbox" checked class="h-4 w-4 accent-accent"></label>
-        <label class="flex items-center justify-between gap-4 rounded-lg bg-slate-900 p-3 text-sm">Simular filtro de saída<input id="net-rule" type="checkbox" checked class="h-4 w-4 accent-accent"></label>
-        <div class="grid grid-cols-2 gap-2"><button class="attack rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-xs font-bold text-red-300" data-kind="exec">Simular execução</button><button class="attack rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-bold text-amber-200" data-kind="net">Simular conexão externa</button></div>
+
+      <div class="panel rounded-2xl p-6 lg:col-span-2">
+        <div class="mb-4 flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-white">Tendência de carga</h2>
+            <p class="text-xs text-slate-400">Curva de referência do simulador em navegador.</p>
+          </div>
+          <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">N1X / EDGE</span>
+        </div>
+        <div class="h-[320px]">
+          <canvas id="chart-load"></canvas>
+        </div>
       </div>
-      <div class="panel rounded-2xl p-6 lg:col-span-2"><div class="mb-3 flex items-center justify-between"><h2 class="text-lg font-bold text-white">Log local de eventos fictícios</h2><button id="clear-log" class="text-xs text-slate-400 underline">Limpar</button></div><div id="log" class="h-72 space-y-2 overflow-auto rounded-xl border border-slate-800 bg-black p-4 font-mono text-xs" aria-live="polite"><p class="text-slate-400">[DEMO] Sandbox visual iniciada. Nenhuma operação de sistema é executada.</p></div></div>
     </section>
-    <section id="infra" class="tab-panel hidden grid gap-5 lg:grid-cols-3" role="tabpanel" aria-labelledby="tab-infra" hidden>
-      <div class="panel space-y-6 rounded-2xl p-6"><div><h2 class="text-lg font-bold text-white">Estimativa de energia</h2><p class="mt-1 text-xs text-slate-400">Exemplo matemático simplificado, não uma proposta comercial.</p></div>
-        <label class="block text-sm">Quantidade de racks <span id="racks-val" class="float-right font-mono text-accent">8</span><input id="racks" type="range" min="1" max="64" value="8" class="mt-3 w-full accent-accent"></label>
-        <label class="block text-sm">Custo de energia (USD/kWh) <span id="price-val" class="float-right font-mono text-accent">$0.12</span><input id="price" type="range" min="0.05" max="0.30" step="0.01" value="0.12" class="mt-3 w-full accent-accent"></label>
-        <label class="block text-sm">PUE hipotético <span id="pue-val" class="float-right font-mono text-accent">1.08</span><input id="pue" type="range" min="1.02" max="1.30" step="0.01" value="1.08" class="mt-3 w-full accent-accent"></label>
-        <div class="rounded-xl border border-accent/30 bg-accent/5 p-4"><p class="text-xs text-slate-400">Diferença estimada vs. PUE hipotético 1.60 em 3 anos</p><p id="savings" class="mt-1 text-2xl font-bold text-accent">$1.30M</p></div>
+
+    <section id="panel-security" class="tab-panel hidden grid gap-5 lg:grid-cols-3">
+      <div class="panel rounded-2xl p-6">
+        <h2 class="text-lg font-bold text-white">Sandbox demonstrativa</h2>
+        <p class="mt-1 text-xs text-slate-400">Controles locais apenas para ilustração visual.</p>
+
+        <div class="mt-6 space-y-3">
+          <label class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-200">
+            Bloquear execução
+            <input id="rule-exec" type="checkbox" checked class="h-4 w-4 accent-accent">
+          </label>
+          <label class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-200">
+            Filtrar saída de rede
+            <input id="rule-net" type="checkbox" checked class="h-4 w-4 accent-accent">
+          </label>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-2">
+          <button class="attack-btn rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-3 text-[11px] font-bold uppercase tracking-[0.14em] text-red-300" data-kind="exec">Execve</button>
+          <button class="attack-btn rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-3 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-200" data-kind="net">Egress</button>
+        </div>
       </div>
-      <div class="panel rounded-2xl p-6 lg:col-span-2"><h2 class="mb-2 text-lg font-bold text-white">Diagrama conceitual</h2><p class="mb-5 text-xs text-slate-400">Nós genéricos para ilustrar componentes possíveis; não representa uma topologia de produto.</p><div class="grid min-h-64 grid-cols-2 place-items-center gap-4 rounded-xl border border-slate-800 bg-slate-950 p-4 sm:grid-cols-3"><div class="node">CPU · conceitual</div><div class="node">Acelerador · conceitual</div><div class="node">Memória · conceitual</div><div class="node">Interconexão · conceitual</div><div class="node">Rede · conceitual</div><div class="node">Gestão · conceitual</div></div><p class="mt-4 text-xs text-slate-500">Valores de potência, PUE e custo são premissas editáveis para fins de demonstração. Consulte documentação e fornecedores para dados reais.</p></div>
+
+      <div class="panel rounded-2xl p-6 lg:col-span-2">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-white">Log de eventos</h2>
+          <button id="clear-log" class="text-xs text-slate-400 underline">Limpar</button>
+        </div>
+        <div id="log" class="h-[320px] space-y-2 overflow-auto rounded-xl border border-slate-800 bg-black p-4 font-mono text-xs text-slate-300">
+          <div class="text-slate-400">[DEMO] Sandbox iniciada. Nenhuma operação real foi executada.</div>
+        </div>
+      </div>
     </section>
-    <footer class="pb-4 text-center text-xs text-slate-500">Projeto independente de fã para aprendizado e demonstração comunitária. NVIDIA e marcas relacionadas pertencem aos respectivos titulares.</footer>
+
+    <section id="panel-infra" class="tab-panel hidden grid gap-5 lg:grid-cols-3">
+      <div class="panel rounded-2xl p-6">
+        <h2 class="text-lg font-bold text-white">Estimativa de energia</h2>
+        <p class="mt-1 text-xs text-slate-400">Modelo conceitual e simplificado.</p>
+
+        <div class="mt-6 space-y-5">
+          <div>
+            <div class="mb-2 flex items-center justify-between text-sm">
+              <span class="text-slate-300">Racks</span>
+              <span id="racks-label" class="font-mono font-bold text-accent">8</span>
+            </div>
+            <input id="racks" type="range" min="1" max="64" value="8" class="w-full accent-accent">
+          </div>
+          <div>
+            <div class="mb-2 flex items-center justify-between text-sm">
+              <span class="text-slate-300">USD/kWh</span>
+              <span id="price-label" class="font-mono font-bold text-accent">$0.12</span>
+            </div>
+            <input id="price" type="range" min="0.05" max="0.30" step="0.01" value="0.12" class="w-full accent-accent">
+          </div>
+          <div>
+            <div class="mb-2 flex items-center justify-between text-sm">
+              <span class="text-slate-300">PUE</span>
+              <span id="pue-label" class="font-mono font-bold text-accent">1.08</span>
+            </div>
+            <input id="pue" type="range" min="1.02" max="1.30" step="0.01" value="1.08" class="w-full accent-accent">
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-xl border border-accent/30 bg-accent/10 p-4">
+          <div class="text-[10px] uppercase tracking-[0.18em] text-slate-400">Economia estimada</div>
+          <div id="savings" class="mt-2 text-3xl font-bold text-accent">$1.30M</div>
+        </div>
+      </div>
+
+      <div class="panel rounded-2xl p-6 lg:col-span-2">
+        <h2 class="mb-4 text-lg font-bold text-white">Diagrama conceitual</h2>
+        <div class="grid min-h-[300px] grid-cols-2 gap-4 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 sm:grid-cols-3">
+          <div class="node rounded-xl p-4 text-center text-xs font-mono text-slate-200">CPU<br>Conceitual</div>
+          <div class="node rounded-xl p-4 text-center text-xs font-mono text-slate-200">Acelerador<br>Conceitual</div>
+          <div class="node rounded-xl p-4 text-center text-xs font-mono text-slate-200">Memória<br>Conceitual</div>
+          <div class="node rounded-xl p-4 text-center text-xs font-mono text-slate-200">Interconexão<br>Conceitual</div>
+          <div class="node rounded-xl p-4 text-center text-xs font-mono text-slate-200">Rede<br>Conceitual</div>
+          <div class="node rounded-xl p-4 text-center text-xs font-mono text-slate-200">Gestão<br>Conceitual</div>
+        </div>
+      </div>
+    </section>
   </main>
-<script>
-  const $=s=>document.querySelector(s);
-  document.querySelectorAll('.node').forEach(n=>n.className+=' rounded-xl border border-accent/30 bg-slate-900 px-4 py-5 text-center text-xs font-mono text-slate-200');
-  const chart=new Chart($('#workload-chart'),{type:'line',data:{labels:['0','2','4','6','8','10','12','14'],datasets:[{label:'Carga ilustrativa (%)',data:[38,44,41,53,48,61,55,67],borderColor:'#76b900',backgroundColor:'rgba(118,185,0,.12)',fill:true,tension:.35}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'#ffffff0d'}},y:{min:0,max:100,ticks:{color:'#94a3b8'},grid:{color:'#ffffff0d'}}},plugins:{legend:{labels:{color:'#cbd5e1'}}}}});
-  function updateWorkload(){const m=+$('#model').value,a=+$('#agents').value;$('#model-val').textContent=m+'B';$('#agents-val').textContent=a;$('#tokens').textContent=Math.max(20,180-m*1.1+a*1.5).toFixed(1);const l=Math.min(99,Math.round(m/1.5+a*1.4));$('#load').textContent=l+'%';chart.data.datasets[0].data=chart.data.datasets[0].data.map((_,i)=>Math.min(100,Math.max(8,l-12+((i*13)%25))));chart.update('none')}
-  $('#model').addEventListener('input',updateWorkload);$('#agents').addEventListener('input',updateWorkload);
-  function updateTco(){const r=+$('#racks').value,p=+$('#price').value,u=+$('#pue').value;$('#racks-val').textContent=r;$('#price-val').textContent='$'+p.toFixed(2);$('#pue-val').textContent=u.toFixed(2);const diff=r*120*(1.6-u)*26280*p;$('#savings').textContent='$'+(diff/1e6).toFixed(2)+'M'}
-  ['racks','price','pue'].forEach(id=>$('#'+id).addEventListener('input',updateTco));
-  function log(msg,cls='text-slate-300'){const p=document.createElement('p');p.className=cls;p.textContent='['+new Date().toLocaleTimeString('pt-BR')+'] '+msg;$('#log').append(p);$('#log').scrollTop=$('#log').scrollHeight}
-  document.querySelectorAll('.attack').forEach(b=>b.addEventListener('click',()=>{const allowed=b.dataset.kind==='exec'?!$('#exec-rule').checked:!$('#net-rule').checked;log(b.dataset.kind==='exec'?'Tentativa fictícia de execução binária':'Tentativa fictícia de conexão externa', 'text-amber-300');log(allowed?'DEMO: evento marcado como permitido pelas opções locais.':'DEMO: evento marcado como bloqueado pelas opções locais.',allowed?'text-red-300':'text-accent')}));
-  $('#clear-log').addEventListener('click',()=>{$('#log').replaceChildren();log('Log limpo. Nenhuma operação real foi executada.','text-slate-400')});
-  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>{t.setAttribute('aria-selected','false');t.classList.remove('text-slate-300')});document.querySelectorAll('.tab-panel').forEach(p=>{p.hidden=true;p.classList.add('hidden')});b.setAttribute('aria-selected','true');b.classList.add('text-slate-300');const panel=$('#'+b.dataset.tab);panel.hidden=false;panel.classList.remove('hidden')}));
-  $('#export').addEventListener('click',()=>{const report={generatedAt:new Date().toISOString(),project:'Independent community demo',disclaimer:'Illustrative values only; not official NVIDIA data or benchmarks.',model:$('#model-val').textContent,agents:$('#agents-val').textContent,simulatedTokensPerSecond:$('#tokens').textContent,racks:$('#racks-val').textContent,estimatedEnergyDifference:$('#savings').textContent};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));a.download='community-demo-report.json';a.click();URL.revokeObjectURL(a.href)});
-  updateWorkload();updateTco();
-</script>
+
+  <footer class="border-t border-slate-800/80 px-4 py-5 text-center text-xs text-slate-500">
+    Projeto independente de fã para educação e demonstração comunitária. Marcas relacionadas pertencem aos seus respectivos titulares.
+  </footer>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const chart = new Chart($('#chart-load'), {
+      type: 'line',
+      data: {
+        labels: ['0','2','4','6','8','10','12','14'],
+        datasets: [{
+          label: 'Carga ilustrativa',
+          data: [34, 41, 39, 52, 47, 58, 54, 66],
+          borderColor: '#76B900',
+          backgroundColor: 'rgba(118,185,0,0.12)',
+          fill: true,
+          borderWidth: 3,
+          tension: 0.35
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { min: 0, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        },
+        plugins: {
+          legend: { labels: { color: '#cbd5e1' } }
+        }
+      }
+    });
+
+    function updateWorkload() {
+      const model = +$('#model').value;
+      const agents = +$('#agents').value;
+
+      $('#model-label').textContent = `${model}B`;
+      $('#agents-label').textContent = agents;
+      $('#tokens').textContent = Math.max(20, 180 - model * 1.1 + agents * 1.5).toFixed(1);
+      const load = Math.min(99, Math.round(model / 1.5 + agents * 1.2));
+      $('#load').textContent = `${load}%`;
+
+      const next = [34, 41, 39, 52, 47, 58, 54, 66].map((_, i) => {
+        const base = load - 10 + ((i * 7) % 18);
+        return Math.min(100, Math.max(10, base));
+      });
+      chart.data.datasets[0].data = next;
+      chart.update();
+    }
+
+    function updateInfra() {
+      const racks = +$('#racks').value;
+      const price = +$('#price').value;
+      const pue = +$('#pue').value;
+      $('#racks-label').textContent = racks;
+      $('#price-label').textContent = `$${price.toFixed(2)}`;
+      $('#pue-label').textContent = pue.toFixed(2);
+      const diff = racks * 120 * (1.6 - pue) * 26280 * price;
+      $('#savings').textContent = `$${(diff / 1e6).toFixed(2)}M`;
+    }
+
+    function addLog(message, tone = 'text-slate-300') {
+      const item = document.createElement('div');
+      item.className = tone;
+      item.textContent = `[${new Date().toLocaleTimeString('pt-BR')}] ${message}`;
+      $('#log').appendChild(item);
+      $('#log').scrollTop = $('#log').scrollHeight;
+    }
+
+    $('.attack-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const kind = btn.dataset.kind;
+        const blocked = kind === 'exec' ? $('#rule-exec').checked : $('#rule-net').checked;
+        addLog(kind === 'exec' ? 'Tentativa de execução binária detectada.' : 'Tentativa de saída de rede detectada.', 'text-amber-300');
+        addLog(blocked ? 'Bloqueado por regra local de demonstração.' : 'Permitido em modo de demonstração.', blocked ? 'text-red-300' : 'text-accent');
+      });
+    });
+
+    $('#clear-log').addEventListener('click', () => {
+      $('#log').innerHTML = '';
+      addLog('Log limpo. Nenhuma operação real foi executada.', 'text-slate-400');
+    });
+
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((t) => {
+          t.classList.remove('tab-selected');
+          t.classList.add('text-slate-300');
+          t.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
+
+        tab.classList.add('tab-selected');
+        tab.classList.remove('text-slate-300');
+        tab.setAttribute('aria-selected', 'true');
+        const target = document.getElementById(tab.dataset.target);
+        target.classList.remove('hidden');
+      });
+    });
+
+    $('#export-report').addEventListener('click', () => {
+      const payload = {
+        generatedAt: new Date().toISOString(),
+        project: 'NVIDIA Community AI Hub',
+        disclaimer: 'Illustrative values only; not official NVIDIA data or benchmarks.',
+        model: $('#model-label').textContent,
+        agents: $('#agents-label').textContent,
+        tokensPerSecond: $('#tokens').textContent,
+        rackEstimate: $('#racks-label').textContent,
+        energySavings: $('#savings').textContent
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nvidia-community-ai-hub-report.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    $('#model').addEventListener('input', updateWorkload);
+    $('#agents').addEventListener('input', updateWorkload);
+    $('#racks').addEventListener('input', updateInfra);
+    $('#price').addEventListener('input', updateInfra);
+    $('#pue').addEventListener('input', updateInfra);
+
+    updateWorkload();
+    updateInfra();
+  </script>
 </body>
 </html>
